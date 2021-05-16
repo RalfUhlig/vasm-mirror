@@ -34,6 +34,7 @@
     <ClCompile Include="..\output_elf.c" />
     <ClCompile Include="..\output_hunk.c" />
     <ClCompile Include="..\output_ihex.c" />
+    <ClCompile Include="..\output_o65.c" />
     <ClCompile Include="..\output_srec.c" />
     <ClCompile Include="..\output_test.c" />
     <ClCompile Include="..\output_tos.c" />

@@ -99,6 +99,9 @@
     <ClCompile Include="..\syntax\oldstyle\syntax.c">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="..\output_o65.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\atom.h">
