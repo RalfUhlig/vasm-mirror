@@ -86,35 +86,6 @@ static taddr xfile_sym_value(symbol *sym)
 }
 
 
-static int write_reloc68k(atom *a,rlist *rl,int signedval,taddr val)
-{
-  nreloc *nrel;
-  char *p;
-
-  if (rl->type > LAST_STANDARD_RELOC) {
-    unsupp_reloc_error(rl);
-    return 0;
-  }
-  nrel = (nreloc *)rl->reloc;
-
-  if (field_overflow(signedval,nrel->size,val)) {
-    output_atom_error(12,a,rl->type,(unsigned long)nrel->mask,nrel->sym->name,
-                      (unsigned long)nrel->addend,nrel->size);
-    return 0;
-  }
-
-  if (a->type == DATA)
-    p = (char *)a->content.db->data + nrel->byteoffset;
-  else if (a->type == SPACE)
-    p = (char *)a->content.sb->fill;  /* @@@ ignore offset completely? */
-  else
-    return 1;
-
-  setbits(1,p,(nrel->bitoffset+nrel->size+7)&~7,nrel->bitoffset,nrel->size,val);
-  return 1;
-}
-
-
 static void do_relocs(taddr pc,atom *a)
 /* Try to resolve all relocations in a DATA or SPACE atom.
    Very simple implementation which can only handle basic 68k relocs. */
@@ -134,24 +105,24 @@ static void do_relocs(taddr pc,atom *a)
     switch (rl->type) {
       case REL_SD:
         checkdefined(((nreloc *)rl->reloc)->sym);
-        write_reloc68k(a,rl,1,
-                       (xfile_sym_value(((nreloc *)rl->reloc)->sym)
-                        + nreloc_real_addend(rl->reloc)) - sdabase);
+        patch_nreloc(a,rl,1,
+                     (xfile_sym_value(((nreloc *)rl->reloc)->sym)
+                      + nreloc_real_addend(rl->reloc)) - sdabase,1);
         break;
       case REL_PC:
         checkdefined(((nreloc *)rl->reloc)->sym);
-        write_reloc68k(a,rl,1,
-                       (xfile_sym_value(((nreloc *)rl->reloc)->sym)
-                        + nreloc_real_addend(rl->reloc)) -
-                       (pc + ((nreloc *)rl->reloc)->byteoffset));
+        patch_nreloc(a,rl,1,
+                     (xfile_sym_value(((nreloc *)rl->reloc)->sym)
+                      + nreloc_real_addend(rl->reloc)) -
+                     (pc + ((nreloc *)rl->reloc)->byteoffset),1);
         break;
       case REL_ABS:
         rcnt++;
         checkdefined(((nreloc *)rl->reloc)->sym);
         sec = ((nreloc *)rl->reloc)->sym->sec;
-        if (!write_reloc68k(a,rl,0,
-                            secoffs[sec?sec->idx:0] +
-                            ((nreloc *)rl->reloc)->addend))
+        if (!patch_nreloc(a,rl,0,
+                          secoffs[sec?sec->idx:0] +
+                          ((nreloc *)rl->reloc)->addend,1))
           break;  /* field overflow */
         if (((nreloc *)rl->reloc)->size == 32)
           break;  /* only support 32-bit absolute */
