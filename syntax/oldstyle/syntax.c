@@ -1083,6 +1083,7 @@ struct {
   "data",handle_secdata,
   "defm",handle_text,
   "text",handle_sectext,
+  "code",handle_sectext,
   "bss",handle_secbss,
   "wor",handle_d16,
   "word",handle_d16,
