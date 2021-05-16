@@ -54,9 +54,12 @@ static void write_output(FILE *f,section *sec,symbol *sym)
     output_error(6,exec_symname);  /* start-symbol not found */
 
   /* we don't support overlapping sections */
+  /* on updatable sections (e.g. bss) it might be ok */
+  /* FIXME: think about that once more */
   for (s=sec,nsecs=0; s!=NULL; s=s->next) {
     for (s2=s->next; s2; s2=s2->next) {
-      if (((ULLTADDR(s2->org) >= ULLTADDR(s->org) &&
+      if ((strchr(s->attr, 'u') == NULL && strchr(s2->attr, 'u') == NULL) &&
+          ((ULLTADDR(s2->org) >= ULLTADDR(s->org) &&
             ULLTADDR(s2->org) < ULLTADDR(s->pc)) ||
            (ULLTADDR(s2->pc) > ULLTADDR(s->org) &&
             ULLTADDR(s2->pc) <= ULLTADDR(s->pc))))
