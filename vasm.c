@@ -983,22 +983,23 @@ int main(int argc,char **argv)
 }
 
 /* searches a section by name and attr (if secname_attr set) */
+/* if there are more than one matching section, the last created will be returned. */
 section *find_section(char *name,char *attr)
 {
-  section *p;
+  section *p, *s = 0;
   if(secname_attr){
     for(p=first_section;p;p=p->next){
       if(!strcmp(name,p->name) && !strcmp(attr,p->attr))
-        return p;
+        s = p;
     }
   }
   else{
     for(p=first_section;p;p=p->next){
       if(!strcmp(name,p->name))
-        return p;
+        s = p;
     }
   }
-  return 0;
+  return s;
 }
 
 /* try to find a matching section name for the given attributes */
@@ -1069,8 +1070,17 @@ section *new_org(taddr org)
   char buf[16];
   section *sec;
 
+  /* create a new section */
   sprintf(buf,"seg%llx",ULLTADDR(org));
   sec = new_section(buf,"acrwx",1);
+
+  if (current_section)
+  {
+    /* replace name and attributes with the current section */
+    sec->name = current_section->name;
+    sec->attr = current_section->attr;
+  }
+
   sec->org = sec->pc = org;
   sec->flags |= ABSOLUTE;  /* absolute destination address */
   return sec;
