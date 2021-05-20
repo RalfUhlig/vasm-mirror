@@ -70,8 +70,18 @@ static void write_output(FILE *f,section *sec,symbol *sym)
 
   /* make an array of section pointers, sorted by their start address */
   seclist = (section **)mymalloc(nsecs * sizeof(section *));
-  for (s=sec,slp=seclist; s!=NULL; s=s->next)
+  for (s = sec, slp = seclist; s != NULL; s = s->next)
+  {
+    /* updatable sections (bss, zero page) should not contain code. empty sections too. skip them. */
+    if ((strchr(s->attr, 'u') != NULL) || (s->flags == 0))
+    {
+      nsecs--;
+      continue;
+    }
+
     *slp++ = s;
+  }
+
   if (nsecs > 1)
     qsort(seclist,nsecs,sizeof(section *),orgcmp);
 
