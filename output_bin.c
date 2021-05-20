@@ -36,7 +36,7 @@ static void write_output(FILE *f,section *sec,symbol *sym)
   atom *p;
   size_t nsecs;
   long hdroffs;
-  unsigned long long pc=0,maxpc=0,npc;
+  unsigned long long pc=0,npc;
 
   if (!sec)
     return;
@@ -184,12 +184,6 @@ static void write_output(FILE *f,section *sec,symbol *sym)
         break;
     }
 
-    /* if we already passed the start position of the section, move back the file position.*/
-    if (pc > ULLTADDR(s->org))
-    {
-      fseek(f, ULLTADDR(s->org) - pc, SEEK_END);
-    }
-
     /* write section contents */
     for (p=s->first,pc=ULLTADDR(s->org); p; p=p->next) {
       npc = ULLTADDR(fwpcalign(f,p,s,pc));
@@ -200,17 +194,6 @@ static void write_output(FILE *f,section *sec,symbol *sym)
         fwsblock(f,p->content.sb);
 
       pc = npc + atom_size(p,s,npc);
-    }
-
-    /* ensure we are at the end of the file and the pc is adjusted. */
-    if (pc < maxpc)
-    {
-      fseek(f, 0, SEEK_END);
-      pc = maxpc;
-    }
-    else if (pc > maxpc)
-    {
-      maxpc = pc;
     }
   }
 
